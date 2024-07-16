@@ -1,11 +1,37 @@
 Package: CTrex
+Title: ctrex - Complex Terminating Random Experiment Selector
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
+Version: 0.0.0.1
+Authors@R: 
+  c(
+    person(given = "Fabian", family = "Scheidt", email = "fabian.scheidt@tu-darmstadt.de", role = c("aut", "cre")),
+    person(given = "Jasin", family = "Machkour", email = "jasin.machkour@tu-darmstadt.de", role = c("aut")),
+    person(given = "Michael", family = "Muma", email = "michael.muma@tu-darmstadt.de", role = "aut")
+  )
 Maintainer: The package maintainer <yourself@somewhere.net>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+License: GPL (>= 3)
 Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
 LazyData: true
+Depends:
+    R (>= 3.5.0)
+Suggests:
+    knitr,
+    rmarkdown,
+    ggplot2,
+    patchwork,
+    testthat (>= 3.0.0)
+Imports:
+    methods,
+    graphics,
+    R6,
+    stats,
+    EigenR,
+    Rcpp (>= 1.0.5)
+LinkingTo:
+    Rcpp
+Config/testthat/edition: 3
+VignetteBuilder: knitr
