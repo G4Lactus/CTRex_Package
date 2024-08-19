@@ -17,6 +17,7 @@ select_var_fun <- function(p,
                            FDP_hat_mat,
                            Phi_mat,
                            V) {
+
   # Remove last row in FDP_hat_mat and Phi_mat if T_stop > 1
   if (T_stop > 1) {
     FDP_hat_mat <- FDP_hat_mat[-T_stop, , drop = FALSE]
