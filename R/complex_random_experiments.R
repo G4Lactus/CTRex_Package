@@ -17,8 +17,10 @@
 # (necessary for warm-starts, i.e., restarting the forward selection process exactly where it was previously terminated).
 # If parallel_process = FALSE: List of objects of the class tlars_cpp associated with the K random experiments
 # (necessary for warm-starts, i.e., restarting the forward selection process exactly where it was previously terminated).
+#' @param ctlars_learner_lst A list of ctlars learners.
 #' @param verbose Logical. If TRUE progress in computations is shown.
 # @param intercept Logical. If TRUE an intercept is included.
+#' @param intercept Default FALSE.
 #' @param standardize Logical. If TRUE the predictors are standardized and the response is centered.
 #' @param parallel_process Logical. If TRUE random experiments are executed in parallel.
 #' @param parallel_max_cores Maximum number of cores to be used for parallel processing
@@ -59,17 +61,19 @@ complex_random_experiments <- function(X,
 
     # Setup complex Lars learner
     n <- length(y)
+    p <- ncol(X)
+
     res <- list()
     for (k in seq.int(K)) {
 
       if (T_stop == 1) {
         # Create dummies
         X_dummy <- matrix(
-          data = exp(1i * stats::runif(n*num_dummies, min = 0, max = 2*pi)),
-          #data = complex(
-          #  real = stats::rnorm(n*num_dummies, mean = 0, sd = 1),
-          #  imaginary = stats::rnorm(n*num_dummies, mean = 0, sd = 1)
-          #),
+          #data = exp(1i * stats::runif(n*num_dummies, min = 0, max = 2*pi)),
+          data = complex(
+            real = stats::rnorm(n*num_dummies, mean = 0, sd = 1),
+            imaginary = stats::rnorm(n*num_dummies, mean = 0, sd = 1)
+          ),
           nrow = n, ncol = num_dummies)
 
         # create learner
@@ -88,8 +92,7 @@ complex_random_experiments <- function(X,
           early_stop = TRUE,
           use_chol = TRUE
         )
-
-         # cat("Aktive set of learner ", k, ": ", ctlars_learner$get_active_set(), "\n")
+        # cat("Aktive set of learner ", k, ": ", ctlars_learner$get_active_set(), "\n")
 
         ctlars_learner_lst[[k]] <- ctlars_learner
 
@@ -165,135 +168,135 @@ complex_random_experiments <- function(X,
 
 
 data_fidelity_check <- function() {
-  # Error control
-  method <- match.arg(method, c("trex", "trex+GVS"))
-
-  if (!is.matrix(X)) {
-    stop("'X' must be a matrix.")
-  }
-
-  if (!is.complex(X)) {
-    stop("'X' only allows numerical values.")
-  }
-
-  if (anyNA(X)) {
-    stop("'X' contains NAs. Please remove or impute them before proceeding.")
-  }
-
-  if (!is.vector(drop(y))) {
-    stop("'y' must be a vector.")
-  }
-
-  if (!is.complex(y)) {
-    stop("'y' only allows numerical values.")
-  }
-
-  if (anyNA(y)) {
-    stop("'y' contains NAs. Please remove or impute them before proceeding.")
-  }
-
-  if (nrow(X) != length(drop(y))) {
-    stop("Number of rows in X does not match length of y.")
-  }
-
-  if (length(K) != 1 ||
-      K < 2 ||
-      K %% 1 != 0) {
-    stop("The number of random experiments 'K' must be an integer larger or equal to 2.")
-  }
-
-  if (method == "trex") {
-    if (length(num_dummies) != 1 ||
-        num_dummies %% 1 != 0 ||
-        num_dummies < 1) {
-      stop("'num_dummies' must be an integer larger or equal to 1.")
-    }
-  }
-
-  # Number of variables in X
-  p <- ncol(X)
-
-  # Continue error control
-  if (method == "trex+GVS") {
-    if (length(num_dummies) != 1 ||
-        num_dummies %% p != 0 ||
-        num_dummies < 1) {
-      stop(
-        "`num_dummies` must be a positive integer multiple of the total number of original predictors in X."
-      )
-    }
-  }
-
-  if (length(T_stop) != 1 || !(T_stop %in% seq(1, num_dummies))) {
-    stop(
-      paste0(
-        "Value of 'T_stop' not valid. 'T_stop' must be an integer from 1 to ",
-        num_dummies,
-        "."
-      )
-    )
-  }
-
-  if (method == "trex+GVS") {
-    if (length(corr_max) != 1 ||
-        corr_max < 0 ||
-        corr_max > 1) {
-      stop("'corr_max' must have a value between zero and one.")
-    }
-
-    if (!is.null(lambda_2_lars)) {
-      if (length(lambda_2_lars) != 1 || lambda_2_lars < eps) {
-        stop("'lambda_2_lars' must be a number larger than zero.")
-      }
-    }
-  }
-
-  if (parallel_process &&
-      (
-        length(parallel_max_cores) != 1 ||
-        parallel_max_cores %% 1 != 0 ||
-        parallel_max_cores < 2
-      )) {
-    stop(
-      "For parallel processing at least two workers have to be registered:
-         'parallel_max_cores' must be an integer larger or equal to 2."
-    )
-  }
-
-  if (parallel_process &&
-      parallel_max_cores > min(K, max(1, parallel::detectCores(logical = FALSE)))) {
-    parallel_max_cores_modified <-
-      min(K, max(1, parallel::detectCores(logical = FALSE)))
-    message(
-      paste0(
-        "For computing ",
-        K,
-        " random experiments, it is not useful/possible to register ",
-        parallel_max_cores,
-        " workers. Setting parallel_max_cores = ",
-        min(K, max(
-          1, parallel::detectCores(logical = FALSE)
-        )),
-        " (# physical cores) ...\n"
-      )
-    )
-    parallel_max_cores <- min(K, max(1, parallel::detectCores(logical = FALSE)))
-  }
-
-  if (parallel_process && T_stop == 1 && num_dummies <= p) {
-    message(
-      "Computing random experiments in parallel...
-            Note that this is only advantageous if you have at least a few thousand predictors and/or data points in 'X'.
-            Otherwise, the overhead will slow down the computations in parallel. Thus, for small data sizes it is better
-            to set parallel_process = FALSE.
-
-      Be careful!"
-    )
-  }
-
-  if (!(missing(lars_state_list) || is.null(lars_state_list))) {
-    if (length(lars_state_list) != K) {
-      stop("Length of 'lars_state_list' must be equal to number of random experiments 'K'.")
-    }
-  }
+  # # Error control
+  # method <- match.arg(method, c("trex", "trex+GVS"))
+  #
+  # if (!is.matrix(X)) {
+  #   stop("'X' must be a matrix.")
+  # }
+  #
+  # if (!is.complex(X)) {
+  #   stop("'X' only allows numerical values.")
+  # }
+  #
+  # if (anyNA(X)) {
+  #   stop("'X' contains NAs. Please remove or impute them before proceeding.")
+  # }
+  #
+  # if (!is.vector(drop(y))) {
+  #   stop("'y' must be a vector.")
+  # }
+  #
+  # if (!is.complex(y)) {
+  #   stop("'y' only allows numerical values.")
+  # }
+  #
+  # if (anyNA(y)) {
+  #   stop("'y' contains NAs. Please remove or impute them before proceeding.")
+  # }
+  #
+  # if (nrow(X) != length(drop(y))) {
+  #   stop("Number of rows in X does not match length of y.")
+  # }
+  #
+  # if (length(K) != 1 ||
+  #     K < 2 ||
+  #     K %% 1 != 0) {
+  #   stop("The number of random experiments 'K' must be an integer larger or equal to 2.")
+  # }
+  #
+  # if (method == "trex") {
+  #   if (length(num_dummies) != 1 ||
+  #       num_dummies %% 1 != 0 ||
+  #       num_dummies < 1) {
+  #     stop("'num_dummies' must be an integer larger or equal to 1.")
+  #   }
+  # }
+  #
+  # # Number of variables in X
+  # p <- ncol(X)
+  #
+  # # Continue error control
+  # if (method == "trex+GVS") {
+  #   if (length(num_dummies) != 1 ||
+  #       num_dummies %% p != 0 ||
+  #       num_dummies < 1) {
+  #     stop(
+  #       "`num_dummies` must be a positive integer multiple of the total number of original predictors in X."
+  #     )
+  #   }
+  # }
+  #
+  # if (length(T_stop) != 1 || !(T_stop %in% seq(1, num_dummies))) {
+  #   stop(
+  #     paste0(
+  #       "Value of 'T_stop' not valid. 'T_stop' must be an integer from 1 to ",
+  #       num_dummies,
+  #       "."
+  #     )
+  #   )
+  # }
+  #
+  # if (method == "trex+GVS") {
+  #   if (length(corr_max) != 1 ||
+  #       corr_max < 0 ||
+  #       corr_max > 1) {
+  #     stop("'corr_max' must have a value between zero and one.")
+  #   }
+  #
+  #   if (!is.null(lambda_2_lars)) {
+  #     if (length(lambda_2_lars) != 1 || lambda_2_lars < eps) {
+  #       stop("'lambda_2_lars' must be a number larger than zero.")
+  #     }
+  #   }
+  # }
+  #
+  # if (parallel_process &&
+  #     (
+  #       length(parallel_max_cores) != 1 ||
+  #       parallel_max_cores %% 1 != 0 ||
+  #       parallel_max_cores < 2
+  #     )) {
+  #   stop(
+  #     "For parallel processing at least two workers have to be registered:
+  #        'parallel_max_cores' must be an integer larger or equal to 2."
+  #   )
+  # }
+  #
+  # if (parallel_process &&
+  #     parallel_max_cores > min(K, max(1, parallel::detectCores(logical = FALSE)))) {
+  #   parallel_max_cores_modified <-
+  #     min(K, max(1, parallel::detectCores(logical = FALSE)))
+  #   message(
+  #     paste0(
+  #       "For computing ",
+  #       K,
+  #       " random experiments, it is not useful/possible to register ",
+  #       parallel_max_cores,
+  #       " workers. Setting parallel_max_cores = ",
+  #       min(K, max(
+  #         1, parallel::detectCores(logical = FALSE)
+  #       )),
+  #       " (# physical cores) ...\n"
+  #     )
+  #   )
+  #   parallel_max_cores <- min(K, max(1, parallel::detectCores(logical = FALSE)))
+  # }
+  #
+  # if (parallel_process && T_stop == 1 && num_dummies <= p) {
+  #   message(
+  #     "Computing random experiments in parallel...
+  #           Note that this is only advantageous if you have at least a few thousand predictors and/or data points in 'X'.
+  #           Otherwise, the overhead will slow down the computations in parallel. Thus, for small data sizes it is better
+  #           to set parallel_process = FALSE.
+  #
+  #     Be careful!"
+  #   )
+  # }
+  #
+  # if (!(missing(lars_state_list) || is.null(lars_state_list))) {
+  #   if (length(lars_state_list) != K) {
+  #     stop("Length of 'lars_state_list' must be equal to number of random experiments 'K'.")
+  #   }
+  # }
 }

@@ -234,94 +234,96 @@ ctrex <- function(X,
 
 # Auxiliar functions
 # -----------------------------------------------
+# TODO: document, but no export
 data_fidelity_check <- function() {
-  # Error control
-  method <- match.arg(method, c("trex", "trex+GVS"))
-
-  type <- match.arg(type, c("lar", "lasso"))
-
-  if (!is.matrix(X)) {
-    stop("'X' must be a matrix.")
-  }
-
-  if (!is.complex(X)) {
-    stop("'X' only allows only complex numerical values.")
-  }
-
-  if (anyNA(X)) {
-    stop("'X' contains NAs. Please remove or impute them before proceeding.")
-  }
-
-  if (!is.vector(drop(y))) {
-    stop("'y' must be a vector.")
-  }
-
-  if (!is.complex(y)) {
-    stop("'y' only allows numerical values.")
-  }
-
-  if (anyNA(y)) {
-    stop("'y' contains NAs. Please remove or impute them before proceeding.")
-  }
-
-  if (nrow(X) != length(drop(y))) {
-    stop("Number of rows in X does not match length of y.")
-  }
-
-  if (length(tFDR) != 1 ||
-      tFDR < 0 ||
-      tFDR > 1) {
-    stop("'tFDR' must be a number between 0 and 1 (including 0 and 1).")
-  }
-
-  if (length(K) != 1 ||
-      K < 2 ||
-      K %% 1 != 0) {
-    stop("The number of random experiments 'K' must be an integer larger or equal to 2.")
-  }
-
-  if (length(max_num_dummies) != 1 ||
-      max_num_dummies < 1 ||
-      max_num_dummies %% 1 != 0) {
-    stop("'max_num_dummies' must be an integer larger or equal to 1.")
-  }
-
-  if (parallel_process &&
-      (length(parallel_max_cores) != 1 ||
-       parallel_max_cores %% 1 != 0 ||
-       parallel_max_cores < 2)) {
-    stop(
-      "For parallel processing at least two workers have to be registered:
-         'parallel_max_cores' must be an integer larger or equal to 2."
-    )
-  }
-
-  if (parallel_process &&
-      parallel_max_cores > min(K, max(
-        1, parallel::detectCores(logical = FALSE)
-      ))) {
-    parallel_max_cores_modified <-
-      min(K, max(1, parallel::detectCores(logical = FALSE)))
-    message(
-      paste0(
-        "For computing ",
-        K,
-        " random experiments, it is not useful/possible to register ",
-        parallel_max_cores,
-        " workers. Setting parallel_max_cores = ",
-        min(K, max(
-          1, parallel::detectCores(logical = FALSE)
-        )),
-        " (# physical cores) ...\n"
-      )
-    )
-    parallel_max_cores <-
-      min(K, max(1, parallel::detectCores(logical = FALSE)))
-  }
+  # # Error control
+  # method <- match.arg(method, c("trex", "trex+GVS"))
+  #
+  # type <- match.arg(type, c("lar", "lasso"))
+  #
+  # if (!is.matrix(X)) {
+  #   stop("'X' must be a matrix.")
+  # }
+  #
+  # if (!is.complex(X)) {
+  #   stop("'X' only allows only complex numerical values.")
+  # }
+  #
+  # if (anyNA(X)) {
+  #   stop("'X' contains NAs. Please remove or impute them before proceeding.")
+  # }
+  #
+  # if (!is.vector(drop(y))) {
+  #   stop("'y' must be a vector.")
+  # }
+  #
+  # if (!is.complex(y)) {
+  #   stop("'y' only allows numerical values.")
+  # }
+  #
+  # if (anyNA(y)) {
+  #   stop("'y' contains NAs. Please remove or impute them before proceeding.")
+  # }
+  #
+  # if (nrow(X) != length(drop(y))) {
+  #   stop("Number of rows in X does not match length of y.")
+  # }
+  #
+  # if (length(tFDR) != 1 ||
+  #     tFDR < 0 ||
+  #     tFDR > 1) {
+  #   stop("'tFDR' must be a number between 0 and 1 (including 0 and 1).")
+  # }
+  #
+  # if (length(K) != 1 ||
+  #     K < 2 ||
+  #     K %% 1 != 0) {
+  #   stop("The number of random experiments 'K' must be an integer larger or equal to 2.")
+  # }
+  #
+  # if (length(max_num_dummies) != 1 ||
+  #     max_num_dummies < 1 ||
+  #     max_num_dummies %% 1 != 0) {
+  #   stop("'max_num_dummies' must be an integer larger or equal to 1.")
+  # }
+  #
+  # if (parallel_process &&
+  #     (length(parallel_max_cores) != 1 ||
+  #      parallel_max_cores %% 1 != 0 ||
+  #      parallel_max_cores < 2)) {
+  #   stop(
+  #     "For parallel processing at least two workers have to be registered:
+  #        'parallel_max_cores' must be an integer larger or equal to 2."
+  #   )
+  # }
+  #
+  # if (parallel_process &&
+  #     parallel_max_cores > min(K, max(
+  #       1, parallel::detectCores(logical = FALSE)
+  #     ))) {
+  #   parallel_max_cores_modified <-
+  #     min(K, max(1, parallel::detectCores(logical = FALSE)))
+  #   message(
+  #     paste0(
+  #       "For computing ",
+  #       K,
+  #       " random experiments, it is not useful/possible to register ",
+  #       parallel_max_cores,
+  #       " workers. Setting parallel_max_cores = ",
+  #       min(K, max(
+  #         1, parallel::detectCores(logical = FALSE)
+  #       )),
+  #       " (# physical cores) ...\n"
+  #     )
+  #   )
+  #   parallel_max_cores <-
+  #     min(K, max(1, parallel::detectCores(logical = FALSE)))
+  # }
 
 
 }
 
+# TODO: document, but no export
 determine_voting_grid <- function() {
 
 }
