@@ -1,6 +1,6 @@
-n <- 100
-p <- 150
-beta_cardinality <- 3
+n <- 1000
+p <- 15000
+beta_cardinality <- 10
 set.seed(42)
 
 data <- ctlars::generate_ccg_data(n,
@@ -22,7 +22,7 @@ cat("True support: ", data$support, "\n")
 ctrex_res <- ctrex(data$X,
       data$y,
       tFDR = 0.1,
-      K = 5,
+      K = 20,
       max_num_dummies = 10,
       max_T_stop = TRUE,
       method = "trex",
@@ -32,7 +32,8 @@ ctrex_res <- ctrex(data$X,
       eps = .Machine$double.eps,
       verbose = TRUE)
 
-cat("True support: ", data$support, "\n")
-cat("Estimated support: ", which(ctrex_res$selected_var > 0))
+cat("True support: ", sort(data$support), "\n")
+cat("Estimated support: ", sort(which(ctrex_res$selected_var > 0)))
 
-
+cat("FDP: ", FDP(sort(which(ctrex_res$selected_var > 0)), data$support), "\n")
+cat("TPP: ", TPP(sort(which(ctrex_res$selected_var > 0)), data$support), "\n")
