@@ -89,7 +89,7 @@ complex_random_experiments <- function(X,
           use_chol = TRUE
         )
 
-        cat("Aktive set of learner ", k, ": ", ctlars_learner$get_active_set(), "\n")
+         # cat("Aktive set of learner ", k, ": ", ctlars_learner$get_active_set(), "\n")
 
         ctlars_learner_lst[[k]] <- ctlars_learner
 
@@ -99,7 +99,7 @@ complex_random_experiments <- function(X,
           early_stop = TRUE,
           use_chol = TRUE
         )
-        cat("Aktive set of learner ", k, ": ", ctlars_learner_lst[[k]]$get_active_set(), "\n")
+        # cat("Aktive set of learner ", k, ": ", ctlars_learner_lst[[k]]$get_active_set(), "\n")
       }
 
       # Number of included dummies along solution path
