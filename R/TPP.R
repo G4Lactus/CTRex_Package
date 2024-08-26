@@ -11,16 +11,7 @@
 #' @export
 #'
 #' @examples
-#' data("Gauss_data")
-#' X <- Gauss_data$X
-#' y <- c(Gauss_data$y)
-#' beta <- Gauss_data$beta
-#'
-#' set.seed(1234)
-#' res <- trex(X, y)
-#' beta_hat <- res$selected_var
-#'
-#' TPP(beta_hat = beta_hat, beta = beta)
+#' set.seed(2)
 # ----------------------------------------------------------------------
 TPP <- function(beta_hat,
                 beta,

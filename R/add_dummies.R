@@ -9,14 +9,10 @@
 #'
 #' @importFrom stats rnorm
 #'
-#' @export
+# @export
 #'
 #' @examples
 #' set.seed(123)
-#' n <- 50
-#' p <- 100
-#' X <- matrix(stats::rnorm(n * p), nrow = n, ncol = p)
-#' add_dummies(X = X, num_dummies = p)
 # ----------------------------------------------------------------------
 add_dummies <- function(X,
                         num_dummies) {

@@ -26,20 +26,10 @@
 #' @importFrom stats rnorm
 #' @importFrom methods is
 #'
-#' @export
+# @export
 #'
 #' @examples
 #' set.seed(123)
-#' eps <- .Machine$double.eps
-#' n <- 75
-#' p <- 100
-#' X <- matrix(stats::rnorm(n * p), nrow = n, ncol = p)
-#' beta <- c(rep(3, times = 3), rep(0, times = 97))
-#' y <- X %*% beta + rnorm(n)
-#' res <- lm_dummy(X = X, y = y, T_stop = 1, num_dummies = 5 * p)
-#' beta_hat <- res$get_beta()[seq(p)]
-#' support <- abs(beta_hat) > eps
-#' support
 # ----------------------------------------------------------------------
 lm_dummy <- function(X,
                      y,
