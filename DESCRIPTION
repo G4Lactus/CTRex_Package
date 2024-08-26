@@ -8,9 +8,7 @@ Authors@R:
     person(given = "Jasin", family = "Machkour", email = "jasin.machkour@tu-darmstadt.de", role = c("aut")),
     person(given = "Michael", family = "Muma", email = "michael.muma@tu-darmstadt.de", role = "aut")
   )
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: The package implements a complex valued T-Rex selector.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -30,6 +28,12 @@ Imports:
     R6,
     stats,
     EigenR,
+    doParallel, 
+    doRNG, 
+    foreach,
+    ctlars,
+    glmnet,
+    tlars,
     Rcpp (>= 1.0.5)
 LinkingTo:
     Rcpp

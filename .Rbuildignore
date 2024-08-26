@@ -5,3 +5,4 @@
 ^README\.html$
 ^cran-comments\.md$
 ^R_demo_scripts
+^README_files
