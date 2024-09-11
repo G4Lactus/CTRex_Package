@@ -20,7 +20,6 @@ scale_x <- function(x,
   # normalize
   tol <- .Machine$double.eps
   for (colX in seq_len(num_cols)) {
-    # x[, colX] <- x[, colX] / x_cstds[colX]
     col_std <- x_cstds[colX]
     if (col_std / sqrt_n < tol) {
       x[, colX] <- tol * sqrt_n
