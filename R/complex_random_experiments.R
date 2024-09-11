@@ -46,6 +46,7 @@ complex_random_experiments <- function(X,
                                K = 20,
                                T_stop = 1,
                                num_dummies = ncol(X),
+                               dummy_type = c("Complex Gaussian", "Complex Circular Uniform")[1],
                                method = "trex",
                                early_stop = TRUE,
                                ctlars_learner_lst = NULL,
@@ -68,16 +69,23 @@ complex_random_experiments <- function(X,
 
       if (T_stop == 1) {
         # Create dummies
-        X_dummy <- matrix(
-          # exp(1i U(0, 2pi)) dummies
-          #data = exp(1i * stats::runif(n*num_dummies, min = 0, max = 2*pi)),
-
+        if (dummy_type == "Complex Gaussian") {
           # CN(0, 1) dummies
-          data = complex(
-            real = stats::rnorm(n*num_dummies, mean = 0, sd = 1),
-            imaginary = stats::rnorm(n*num_dummies, mean = 0, sd = 1)
-          )/sqrt(2),
-          nrow = n, ncol = num_dummies)
+          X_dummy <- matrix(
+            data = complex(
+              real = stats::rnorm(n*num_dummies, mean = 0, sd = 1),
+              imaginary = stats::rnorm(n*num_dummies, mean = 0, sd = 1)
+            )/sqrt(2),
+            nrow = n, ncol = num_dummies)
+        } else if (dummy_type == "Complex Circular Uniform") {
+          # exp(1i U(0, 2pi)) dummies
+          X_dummy <- matrix(
+            data = exp(1i * stats::runif(n*num_dummies, min = 0, max = 2*pi)),
+            nrow = n, ncol = num_dummies)
+        } else {
+          stop("Dummy Type not supported.")
+        }
+
 
         # create learner
         ctlars_learner <- ctlars::ctlars$new(
