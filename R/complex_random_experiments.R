@@ -69,11 +69,14 @@ complex_random_experiments <- function(X,
       if (T_stop == 1) {
         # Create dummies
         X_dummy <- matrix(
+          # exp(1i U(0, 2pi)) dummies
           #data = exp(1i * stats::runif(n*num_dummies, min = 0, max = 2*pi)),
+
+          # CN(0, 1) dummies
           data = complex(
             real = stats::rnorm(n*num_dummies, mean = 0, sd = 1),
             imaginary = stats::rnorm(n*num_dummies, mean = 0, sd = 1)
-          ),
+          )/sqrt(2),
           nrow = n, ncol = num_dummies)
 
         # create learner
