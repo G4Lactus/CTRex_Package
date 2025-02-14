@@ -4,5 +4,5 @@
 ^README\.Rmd$
 ^README\.html$
 ^cran-comments\.md$
-^R_demo_scripts
+^demos
 ^README_files
