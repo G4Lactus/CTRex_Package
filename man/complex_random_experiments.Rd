@@ -10,7 +10,11 @@ complex_random_experiments(
   K = 20,
   T_stop = 1,
   num_dummies = ncol(X),
-  method = "trex",
+  dummy_type = c("Complex Gaussian", "Complex Circular Uniform")[1],
+  method = c("ctrex", "ctrex+GVS")[1],
+  gvs_type = c("cEN", "cIEN")[1],
+  cor_max = 0.5,
+  lambda_2_lars = NULL,
   early_stop = TRUE,
   ctlars_learner_lst = NULL,
   verbose = TRUE,
@@ -33,7 +37,9 @@ complex_random_experiments(
 
 \item{num_dummies}{Number of dummies that are appended to the predictor matrix.}
 
-\item{method}{'trex' for the T-Rex selector.}
+\item{method}{'ctrex' for the T-Rex selector. 'ctrex+GVS' for CT-Rex Group-Variable Selector.}
+
+\item{gvs_type}{'cEN' for elastic network group selection. 'cIEN' for informed-elastic network group selection.}
 
 \item{early_stop}{Logical. If TRUE, then the forward selection process is stopped after T_stop dummies have been included.
 Otherwise the entire solution path is computed.}

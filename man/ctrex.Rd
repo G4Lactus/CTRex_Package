@@ -11,7 +11,9 @@ ctrex(
   K = 20,
   max_num_dummies = 10,
   max_T_stop = TRUE,
-  method = "trex",
+  method = c("ctrex", "ctrex+GVS")[1],
+  gvs_type = c("cEN", "cIEN")[1],
+  dummy_type = c("Complex Gaussian", "Complex Circular Uniform")[1],
   parallel_process = FALSE,
   parallel_max_cores = min(K, max(1, parallel::detectCores(logical = FALSE))),
   seed = NULL,
@@ -34,7 +36,9 @@ ctrex(
 \item{max_T_stop}{If TRUE the maximum number of dummies that can be included before stopping is set to ceiling(n / 2),
 where n is the number of data points/observations.}
 
-\item{method}{'trex' for the T-Rex selector.}
+\item{method}{'trex' for the T-Rex selector. 'trex+GVS' for CT-Rex Group-Variable Selector.}
+
+\item{gvs_type}{'EN' for elastic network group selection. 'IEN' for informed-elastic network group selection.}
 
 \item{parallel_process}{Logical. If TRUE random experiments are executed in parallel.}
 
