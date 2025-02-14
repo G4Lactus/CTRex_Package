@@ -10,7 +10,8 @@
 #' @param K Number of random experiments.
 #' @param T_stop Number of included dummies after which the random experiments (i.e., forward selection processes) are stopped.
 #' @param num_dummies Number of dummies that are appended to the predictor matrix.
-#' @param method 'trex' for the T-Rex selector.
+#' @param method 'ctrex' for the T-Rex selector. 'ctrex+GVS' for CT-Rex Group-Variable Selector.
+#' @param gvs_type 'cEN' for elastic network group selection. 'cIEN' for informed-elastic network group selection.
 #' @param early_stop Logical. If TRUE, then the forward selection process is stopped after T_stop dummies have been included.
 #' Otherwise the entire solution path is computed.
 # @param lars_state_list If parallel_process = TRUE: List of state variables of the previous T-LARS steps of the K random experiments
@@ -47,7 +48,11 @@ complex_random_experiments <- function(X,
                                T_stop = 1,
                                num_dummies = ncol(X),
                                dummy_type = c("Complex Gaussian", "Complex Circular Uniform")[1],
-                               method = "trex",
+                               method = c("ctrex", "ctrex+GVS")[1],
+                               gvs_type = c("cEN", "cIEN")[1],
+                               hc_method = "ward.D2",
+                               coherence_max = 0.5,
+                               lambda_2_lars = NULL,
                                early_stop = TRUE,
                                ctlars_learner_lst = NULL,
                                verbose = TRUE,
@@ -59,37 +64,121 @@ complex_random_experiments <- function(X,
                                eps = .Machine$double.eps) {
 
     # TODO: data fidelity check
+    # ...
 
     # Setup complex Lars learner
     n <- length(y)
     p <- ncol(X)
+    y_copy <- y
 
     res <- list()
     for (k in seq.int(K)) {
 
-      if (T_stop == 1) {
-        # Create dummies
-        if (dummy_type == "Complex Gaussian") {
-          # CN(0, 1) dummies
-          X_dummy <- matrix(
-            data = complex(
-              real = stats::rnorm(n*num_dummies, mean = 0, sd = 1),
-              imaginary = stats::rnorm(n*num_dummies, mean = 0, sd = 1)
-            )/sqrt(2),
-            nrow = n, ncol = num_dummies)
-        } else if (dummy_type == "Complex Circular Uniform") {
-          # exp(1i U(0, 2pi)) dummies
-          X_dummy <- matrix(
-            data = exp(1i * stats::runif(n*num_dummies, min = 0, max = 2*pi)),
-            nrow = n, ncol = num_dummies)
-        } else {
-          stop("Dummy Type not supported.")
+      if (T_stop == 1) { # ----------------------------------------------------
+
+        if (method == "ctrex") { # ---------------------------------------------
+
+          # TODO: create environment based wrapper
+          # -------------------------------------------
+          # Create dummies
+          if (dummy_type == "Complex Gaussian") {
+            # CN(0, 1) dummies
+            X_dummy <- matrix(
+              data = complex(
+                real = stats::rnorm(n*num_dummies, mean = 0, sd = 1),
+                imaginary = stats::rnorm(n*num_dummies, mean = 0, sd = 1)
+              )/sqrt(2),
+              nrow = n, ncol = num_dummies)
+          } else if (dummy_type == "Complex Circular Uniform") {
+            # exp(1i U(0, 2pi)) dummies
+            X_dummy <- matrix(
+              data = exp(1i * stats::runif(n*num_dummies, min = 0, max = 2*pi)),
+              nrow = n, ncol = num_dummies)
+          } else {
+            stop("Dummy type not supported.")
+          }
+          X_dummy <- cbind(X, X_dummy)
+          # -------------------------------------------
+
+
+        } else if (method == "ctrex+GVS") { # ----------------------------------
+
+          y <- y_copy
+
+          # Ridge regression to determine lambda_2 for elastic net
+          if (is.null(lambda_2_lars)) {
+            lambda_2_lars <- lambda_cv(X,
+                                       y,
+                                       epsilon = 1e-3,
+                                       L = 100,
+                                       nfolds = 10)$lambda_1se
+          }
+
+          # trex+GVS data modification
+          # -----------------------------------
+          # Complex Elastic network
+          if (gvs_type == "cEN") { # ----------------------------------
+
+            X_dummy <- add_complex_gvs_dummies(
+              X = X,
+              num_dummies = num_dummies,
+              hc_method = hc_method,
+              coherence_max = coherence_max)$X_dummy
+
+            p_dummy <- ncol(X_dummy)
+
+            X_dummy <- (1 / sqrt(1 + lambda_2_lars)) *
+              rbind(X_dummy, diag(rep(sqrt(lambda_2_lars), times = p_dummy)))
+
+            y <- append(y, rep(0, times = p_dummy))
+
+
+          # Complex Informed Elastic Network
+          } else if (gvs_type == "cIEN") { # ----------------------------------
+
+            cmplx_gvs_dummies <- add_complex_gvs_dummies(
+              X = X,
+              num_dummies = num_dummies,
+              gvs_type = "cIEN",
+              hc_method = hc_method,
+              coherence_max = coherence_max)
+
+            X_dummy <- cmplx_gvs_dummies$X_dummy
+
+            p_dummy <- ncol(X_dummy)
+
+            max_clusters <- cmplx_gvs_dummies$max_clusters
+
+            cluster_sizes <- cmplx_gvs_dummies$cluster_sizes
+
+            IEN_cl_id_vectors <- cmplx_gvs_dummies$IEN_cl_id_vectors
+
+            X_dummy <- sqrt(lambda_2_lars) *
+              rbind((1 / sqrt(lambda_2_lars)) * X_dummy,
+                              (1 / sqrt(cluster_sizes)) *
+                      matrix(rep(IEN_cl_id_vectors, times = p_dummy / p),
+                             ncol = ncol(IEN_cl_id_vectors) * p_dummy / p))
+
+            y <- append(y, rep(0, times = max_clusters))
+
+          } else { # ----------------------------------------------------------
+            stop("`gvs_type` not supported.")
+          }
+
+          # Re-scale X_dummy and y
+          X_dummy <- scale_x(X_dummy)
+          y <- y - mean(y)
+
+        } else { # ------------------------------------------------------------
+          stop("`method` not supported.")
         }
 
 
+        # Perform random experiments
+        # ----------------------------------------------
         # create learner
         ctlars_learner <- ctlars::ctlars$new(
-          cbind(X, X_dummy),
+          X_dummy,
           y,
           standardize = TRUE,
           has_intercept = FALSE,
@@ -105,9 +194,11 @@ complex_random_experiments <- function(X,
         )
         # cat("Aktive set of learner ", k, ": ", ctlars_learner$get_active_set(), "\n")
 
+        # summarize ctlars learner results
         ctlars_learner_lst[[k]] <- ctlars_learner
 
-      } else { # T_stop > 1
+
+      } else { # T_stop > 1 ---------------------------------------------------
         ctlars_learner_lst[[k]]$execute_clars_step(
           t_stop = T_stop,
           early_stop = TRUE,
@@ -158,6 +249,7 @@ complex_random_experiments <- function(X,
   Phi <- apply(abs(rand_exp_last_betas_mat) > eps, 2, sum) / K
 
   # List of results
+  # -----------------------
   rand_exp_res <- list(
     phi_T_mat = phi_T_mat,
     rand_exp_last_betas_mat = rand_exp_last_betas_mat,
