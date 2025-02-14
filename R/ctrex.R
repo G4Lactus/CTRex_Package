@@ -13,7 +13,8 @@
 #' (i.e., num_dummies = max_num_dummies * p).
 #' @param max_T_stop If TRUE the maximum number of dummies that can be included before stopping is set to ceiling(n / 2),
 #' where n is the number of data points/observations.
-#' @param method 'trex' for the T-Rex selector.
+#' @param method 'trex' for the T-Rex selector. 'trex+GVS' for CT-Rex Group-Variable Selector.
+#' @param gvs_type 'EN' for elastic network group selection. 'IEN' for informed-elastic network group selection.
 #' @param parallel_process Logical. If TRUE random experiments are executed in parallel.
 #' @param parallel_max_cores Maximum number of cores to be used for parallel processing
 #' (default: minimum{Number of random experiments K, number of physical cores}).
@@ -33,18 +34,21 @@
 #' set.seed(1)
 # ----------------------------------------------------------------------
 ctrex <- function(X,
-                 y,
-                 tFDR = 0.2,
-                 K = 20,
-                 max_num_dummies = 10,
-                 max_T_stop = TRUE,
-                 method = "trex",
-                 dummy_type = c("Complex Gaussian", "Complex Circular Uniform")[1],
-                 parallel_process = FALSE,
-                 parallel_max_cores = min(K, max(1, parallel::detectCores(logical = FALSE))),
-                 seed = NULL,
-                 eps = .Machine$double.eps,
-                 verbose = TRUE) {
+                  y,
+                  tFDR = 0.2,
+                  K = 20,
+                  max_num_dummies = 10,
+                  max_T_stop = TRUE,
+                  method = c("ctrex", "ctrex+GVS")[1],
+                  gvs_type = c("cEN", "cIEN")[1],
+                  dummy_type = c("Complex Gaussian", "Complex Circular Uniform")[1],
+                  hc_method = c("single", "complete", "ward.D2"),
+                  coherence_max = 0.5,
+                  parallel_process = FALSE,
+                  parallel_max_cores = min(K, max(1, parallel::detectCores(logical = FALSE))),
+                  seed = NULL,
+                  eps = .Machine$double.eps,
+                  verbose = TRUE) {
 
   # ---------------------------------------------------
   # TODO: perform `data_fidelity_check` function
@@ -93,6 +97,10 @@ ctrex <- function(X,
         num_dummies = num_dummies,
         dummy_type = dummy_type,
         method = method,
+        gvs_type = gvs_type,
+        hc_method = hc_method,
+        coherence_max = coherence_max,
+        lambda_2_lars = NULL,
         early_stop = TRUE,
         ctlars_learner_lst = ctlars_learner_lst,
         verbose = FALSE,
@@ -159,6 +167,10 @@ ctrex <- function(X,
         num_dummies = num_dummies,
         dummy_type = dummy_type,
         method = method,
+        gvs_type = gvs_type,
+        hc_method = hc_method,
+        coherence_max = coherence_max,
+        lambda_2_lars = NULL,
         early_stop = TRUE,
         ctlars_learner_lst = rand_exp$ctlars_learner_lst,
         verbose = FALSE,
@@ -326,7 +338,7 @@ data_fidelity_check <- function() {
 
 }
 
-# TODO: document, but no export
-determine_voting_grid <- function() {
-
-}
+# # TODO: document, but no export
+# determine_voting_grid <- function() {
+#
+# }
