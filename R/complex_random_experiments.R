@@ -122,6 +122,7 @@ complex_random_experiments <- function(X,
             X_dummy <- add_complex_gvs_dummies(
               X = X,
               num_dummies = num_dummies,
+              gvs_type = gvs_type,
               hc_method = hc_method,
               coherence_max = coherence_max)$X_dummy
 
@@ -139,7 +140,7 @@ complex_random_experiments <- function(X,
             cmplx_gvs_dummies <- add_complex_gvs_dummies(
               X = X,
               num_dummies = num_dummies,
-              gvs_type = "cIEN",
+              gvs_type = gvs_type,
               hc_method = hc_method,
               coherence_max = coherence_max)
 
