@@ -1,30 +1,46 @@
-complex_hclust <- function(X, hc_method, coherence_max = 0.5) {
+complex_hclust <- function(X,
+                           hc_method,
+                           tree_cut_type,
+                           coherence_max = 0.5,
+                           minModuleSize = 10) {
 
-  # TODO: Data fidelity check
+  # TODO: Input data fidelity check
 
   # Perform hierarchical clustering
   hc_fit <- stats::hclust(complex_corr_dist(X), method = hc_method)
-  clusters <- stats::cutree(hc_fit, h = 1 - coherence_max)
-  max_clusters <- max(clusters)
+
+  if (tree_cut_type == "fixed") {
+    clusters <- stats::cutree(hc_fit, h = 1 - coherence_max)
+    max_clusters <- max(clusters)
+
+  } else if (tree_cut_type == "dynamic") {
+  clusters <- dynamicTreeCut::cutreeDynamicTree(hc_fit,
+                                                deepSplit = FALSE,
+                                                minModuleSize = minModuleSize
+                                                )
+  max_clusters <- max(clusters + 1)
+
+  } else {
+    stop("`tree_cut_type` not supported.")
+  }
 
   clusters <- data.frame(
     "Var" = names(clusters),
     "Cluster_Nr." = unname(clusters)
   )
 
-  clusters <-
-    stats::aggregate(clusters$"Var" ~ clusters$"Cluster_Nr.",
+  clusters <- stats::aggregate(clusters$"Var" ~ clusters$"Cluster_Nr.",
                      FUN = "c",
-                     simplify = FALSE
-    )
-
-
+                     simplify = FALSE)
   cluster_sizes <- vector("numeric", length = max_clusters)
+
   for (j in seq(max_clusters)) {
     cluster_sizes[j] <- length(clusters$`clusters$Var`[[j]])
   }
 
   return(list(max_clusters = max_clusters,
               clusters = clusters,
-              cluster_sizes = cluster_sizes))
+              cluster_sizes = cluster_sizes)
+         )
+
 }

@@ -2,15 +2,24 @@ add_complex_gvs_dummies <- function(X,
                                     num_dummies,
                                     gvs_type,
                                     hc_method,
-                                    coherence_max = 0.5) {
+                                    tree_cut_type,
+                                    coherence_max = 0.5,
+                                    minModuleSize = 10) {
 
-  # TODO: data fidelity check (see below - open)
+  # TODO: write function for input data fidelity check (see below - open)
+
   n <- nrow(X)
   p <- ncol(X)
   colnames(X) <- paste0("V", seq(p))
 
   # Perform clustering
-  cluster_res <- complex_hclust(X, hc_method = hc_method, coherence_max = coherence_max)
+  cluster_res <- complex_hclust(X,
+                                hc_method = hc_method,
+                                coherence_max = coherence_max,
+                                tree_cut_type = tree_cut_type,
+                                coherence_max = coherence_max,
+                                minModuleSize = minModuleSize
+                               )
 
   # Generate dummy predictors and append them to original X
   w_max <- num_dummies / p
@@ -54,5 +63,5 @@ add_complex_gvs_dummies <- function(X,
 }
 
 
-# TODO: data fidelity check
+# TODO: write function for data fidelity check
 

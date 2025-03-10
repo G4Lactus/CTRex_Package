@@ -35,7 +35,7 @@
 # ----------------------------------------------------------------------
 ctrex <- function(X,
                   y,
-                  tFDR = 0.2,
+                  tFDR = 0.1,
                   K = 20,
                   max_num_dummies = 10,
                   max_T_stop = TRUE,
@@ -43,16 +43,19 @@ ctrex <- function(X,
                   gvs_type = c("cEN", "cIEN")[1],
                   dummy_type = c("Complex Gaussian", "Complex Circular Uniform")[1],
                   hc_method = c("single", "complete", "ward.D2")[1],
+                  tree_cut_type = c("fixed", "dynamic")[1],
                   coherence_max = 0.5,
+                  minModuleSize = 10,
                   parallel_process = FALSE,
                   parallel_max_cores = min(K, max(1, parallel::detectCores(logical = FALSE))),
                   seed = NULL,
                   eps = .Machine$double.eps,
                   verbose = TRUE) {
 
-  # ---------------------------------------------------
-  # TODO: perform `data_fidelity_check` function
-  # ---------------------------------------------------
+
+  # TODO: write and perform `data_fidelity_check` function
+
+
   # Scale X and center y
   X <- scale_x(X)
   y <- y - mean(y)
@@ -65,7 +68,7 @@ ctrex <- function(X,
   V_len <- length(V)
 
   # Initialize L-loop
-  # --------------------------------------------------
+  # ===========================================================
   n <- nrow(X)
   p <- ncol(X)
 
@@ -99,7 +102,9 @@ ctrex <- function(X,
         method = method,
         gvs_type = gvs_type,
         hc_method = hc_method,
+        tree_cut_type = tree_cut_type,
         coherence_max = coherence_max,
+        minModuleSize = minModuleSize,
         lambda_2_lars = NULL,
         early_stop = TRUE,
         ctlars_learner_lst = ctlars_learner_lst,
@@ -136,10 +141,11 @@ ctrex <- function(X,
       cat(paste("\n Appended dummies:", num_dummies, "\n"))
     }
   }
+  # ===========================================================
 
-  #browser()
+
   # Initialize T-loop
-  # ------------------------------------------------------
+  # ===========================================================
   FDP_hat_mat <- matrix(FDP_hat, nrow = 1)
   Phi_mat <- matrix(rand_exp$Phi, nrow = 1)
 
@@ -169,7 +175,9 @@ ctrex <- function(X,
         method = method,
         gvs_type = gvs_type,
         hc_method = hc_method,
+        tree_cut_type = tree_cut_type,
         coherence_max = coherence_max,
+        minModuleSize = minModuleSize,
         lambda_2_lars = NULL,
         early_stop = TRUE,
         ctlars_learner_lst = rand_exp$ctlars_learner_lst,
@@ -210,7 +218,7 @@ ctrex <- function(X,
       cat(paste("\n Included dummies before stopping:", T_stop, "\n"))
     }
   }
-  # -----------------------------------------------
+  # ===========================================================
 
   # T-Rex: Select variables
   # -----------------------------------------------

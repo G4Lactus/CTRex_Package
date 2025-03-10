@@ -51,7 +51,9 @@ complex_random_experiments <- function(X,
                                method = c("ctrex", "ctrex+GVS")[1],
                                gvs_type = c("cEN", "cIEN")[1],
                                hc_method = "ward.D2",
+                               tree_cut_type = c("fixed", "dynamic")[1],
                                coherence_max = 0.5,
+                               minModuleSize = 10,
                                lambda_2_lars = NULL,
                                early_stop = TRUE,
                                ctlars_learner_lst = NULL,
@@ -63,8 +65,7 @@ complex_random_experiments <- function(X,
                                seed = NULL,
                                eps = .Machine$double.eps) {
 
-    # TODO: data fidelity check
-    # ...
+    # TODO: write input data fidelity check
 
     # Setup complex Lars learner
     n <- length(y)
@@ -74,7 +75,7 @@ complex_random_experiments <- function(X,
     res <- list()
     for (k in seq.int(K)) {
 
-      if (T_stop == 1) { # ----------------------------------------------------
+      if (T_stop == 1) {
 
         if (method == "ctrex") { # ---------------------------------------------
 
@@ -124,7 +125,9 @@ complex_random_experiments <- function(X,
               num_dummies = num_dummies,
               gvs_type = gvs_type,
               hc_method = hc_method,
-              coherence_max = coherence_max)$X_dummy
+              tree_cut_type = tree_cut_type,
+              coherence_max = coherence_max,
+              minModuleSize = minModuleSize)$X_dummy
 
             p_dummy <- ncol(X_dummy)
 
@@ -138,11 +141,14 @@ complex_random_experiments <- function(X,
           } else if (gvs_type == "cIEN") { # ----------------------------------
 
             cmplx_gvs_dummies <- add_complex_gvs_dummies(
-              X = X,
-              num_dummies = num_dummies,
-              gvs_type = gvs_type,
-              hc_method = hc_method,
-              coherence_max = coherence_max)
+                X = X,
+                num_dummies = num_dummies,
+                gvs_type = gvs_type,
+                hc_method = hc_method,
+                tree_cut_type = tree_cut_type,
+                coherence_max = coherence_max,
+                minModuleSize = minModuleSize
+              )
 
             X_dummy <- cmplx_gvs_dummies$X_dummy
 
@@ -155,8 +161,8 @@ complex_random_experiments <- function(X,
             IEN_cl_id_vectors <- cmplx_gvs_dummies$IEN_cl_id_vectors
 
             X_dummy <- sqrt(lambda_2_lars) *
-              rbind((1 / sqrt(lambda_2_lars)) * X_dummy,
-                              (1 / sqrt(cluster_sizes)) *
+              rbind( (1 / sqrt(lambda_2_lars)) * X_dummy,
+                     (1 / sqrt(cluster_sizes)) *
                       matrix(rep(IEN_cl_id_vectors, times = p_dummy / p),
                              ncol = ncol(IEN_cl_id_vectors) * p_dummy / p))
 
@@ -207,6 +213,8 @@ complex_random_experiments <- function(X,
         )
         # cat("Aktive set of learner ", k, ": ", ctlars_learner_lst[[k]]$get_active_set(), "\n")
       }
+
+      # -------------------------------------------------------
 
       # Number of included dummies along solution path
       lars_path <- ctlars_learner_lst[[k]]$get_beta_history()
