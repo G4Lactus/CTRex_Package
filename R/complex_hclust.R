@@ -14,15 +14,26 @@ complex_hclust <- function(X,
     max_clusters <- max(clusters)
 
   } else if (tree_cut_type == "dynamic") {
-  clusters <- dynamicTreeCut::cutreeDynamicTree(hc_fit,
-                                                deepSplit = FALSE,
-                                                minModuleSize = minModuleSize
-                                                )
-  max_clusters <- max(clusters + 1)
+    if (is.null(minModuleSize)) {
+      # Perform model order determination
+      minModuleSizes <- seq(5, 50, by = 5)
+      optimal_minModuleSize <- determine_optimal_minModuleSize(hc_fit, minModuleSizes)
+      minModuleSize <- optimal_minModuleSize
+
+    }
+    clusters <- dynamicTreeCut::cutreeDynamicTree(
+                        hc_fit,
+                        deepSplit = FALSE,
+                        minModuleSize = minModuleSize
+                      )
+    clusters <- clusters + 1
+    names(clusters) <- paste0("V", 1:length(clusters))
+    max_clusters <- max(clusters)
 
   } else {
     stop("`tree_cut_type` not supported.")
   }
+
 
   clusters <- data.frame(
     "Var" = names(clusters),
@@ -32,15 +43,43 @@ complex_hclust <- function(X,
   clusters <- stats::aggregate(clusters$"Var" ~ clusters$"Cluster_Nr.",
                      FUN = "c",
                      simplify = FALSE)
-  cluster_sizes <- vector("numeric", length = max_clusters)
 
+  cluster_sizes <- vector("numeric", length = max_clusters)
   for (j in seq(max_clusters)) {
     cluster_sizes[j] <- length(clusters$`clusters$Var`[[j]])
   }
 
-  return(list(max_clusters = max_clusters,
-              clusters = clusters,
-              cluster_sizes = cluster_sizes)
+  return(
+    list(max_clusters = max_clusters,
+         clusters = clusters,
+         cluster_sizes = cluster_sizes
          )
+  )
 
+}
+
+
+
+determine_optimal_minModuleSize <- function(hc_fit, minModuleSizes) {
+  # Initialize vectors to store metrics
+  nClusters <- numeric(length(minModuleSizes))
+
+  # Loop through minModuleSize values
+  for (i in seq_along(minModuleSizes)) {
+    minSize <- minModuleSizes[i]
+    clusters <- dynamicTreeCut::cutreeDynamicTree(hc_fit, deepSplit = FALSE, minModuleSize = minSize)
+
+    # Calculate metrics
+    nClusters[i] <- length(unique(clusters))
+  }
+
+  # Calculate first-order differences of nClusters and
+  # find the index of the largest negative difference
+  max_diff_index <- which.min(diff(nClusters))
+
+  # Correct the index to match the original minModuleSizes
+  corrected_index <- max_diff_index + 1
+
+  # Return the optimal minModuleSize
+  return(minModuleSizes[corrected_index])
 }
