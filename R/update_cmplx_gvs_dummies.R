@@ -5,6 +5,7 @@ update_cmplx_gvs_dummies <- function(cenv = environment()) {
   p <- cenv$p
   for (w in seq(cenv$w_max)) {
     for (z in seq(cenv$cluster_res$max_clusters)) {
+
       sub_X <- cenv$X[, cenv$cluster_res$clusters$`clusters$Var`[[z]], drop = FALSE]
       sigma_sub_X <- complex_cov(sub_X)
       idx <- cumsum(cenv$cluster_res$cluster_sizes)
