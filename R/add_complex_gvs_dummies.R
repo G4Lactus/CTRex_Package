@@ -15,7 +15,6 @@ add_complex_gvs_dummies <- function(X,
   # Perform clustering
   cluster_res <- complex_hclust(X,
                                 hc_method = hc_method,
-                                coherence_max = coherence_max,
                                 tree_cut_type = tree_cut_type,
                                 coherence_max = coherence_max,
                                 minModuleSize = minModuleSize
