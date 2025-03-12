@@ -1,5 +1,7 @@
 complex_corr_dist <- function(X) {
+
   n <- nrow(X)
+
   # NOTE: scaling causes trouble with clustering a steering mtx.
   #X <- scale(X, center = TRUE, scale = FALSE)
   cov_mat <- Conj(t(X)) %*% X
@@ -13,4 +15,5 @@ complex_corr_dist <- function(X) {
 
   # Transform correlation matrix into distance matrix
   return(as.dist(1 - Mod(corr_mat)))
+
 }
