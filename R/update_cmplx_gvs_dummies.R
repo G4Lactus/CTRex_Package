@@ -14,22 +14,20 @@ update_cmplx_gvs_dummies <- function(cenv = environment()) {
   for (w in seq_len(w_max)) {
     for (z in seq(max_clusters)) {
 
-      sigma_sub_X <- complex_cov(cenv$X[, cluster_var[[z]], drop = FALSE])
-      mu <- rep(0, cluster_sizes[z])
-
       if (z == 1) {
-        X_p_sub_dummy_blck[, seq(idx[z])] <- cmvnorm::rcmvnorm(
-                                          n = n,
-                                          mean = mu,
-                                          sigma = sigma_sub_X)
-
+        cols <- seq(idx[z])
       } else {
-        X_p_sub_dummy_blck[, seq(idx[z - 1] + 1, idx[z])] <- cmvnorm::rcmvnorm(
-                                                          n = n,
-                                                          mean = mu,
-                                                          sigma = sigma_sub_X)
-
+        cols <- seq(idx[z - 1] + 1, idx[z])
       }
+
+      X_p_sub_dummy_blck[, cols] <- cmvnorm::rcmvnorm(
+                                      n = n,
+                                      mean = rep(0, cluster_sizes[z]),
+                                      sigma = complex_cov(
+                                        cenv$X[, cluster_var[[z]], drop = FALSE]
+                                        )
+                                      )
+
     }
     X_dummy[, seq.int(w * p + 1, (w + 1) * p)] <- X_p_sub_dummy_blck
   }
