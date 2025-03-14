@@ -7,7 +7,7 @@
 ctrex(
   X,
   y,
-  tFDR = 0.2,
+  tFDR = 0.1,
   K = 20,
   max_num_dummies = 10,
   max_T_stop = TRUE,
@@ -15,7 +15,9 @@ ctrex(
   gvs_type = c("cEN", "cIEN")[1],
   dummy_type = c("Complex Gaussian", "Complex Circular Uniform")[1],
   hc_method = c("single", "complete", "ward.D2")[1],
+  tree_cut_type = c("fixed", "dynamic")[1],
   coherence_max = 0.5,
+  minModuleSize = 10,
   parallel_process = FALSE,
   parallel_max_cores = min(K, max(1, parallel::detectCores(logical = FALSE))),
   seed = NULL,
