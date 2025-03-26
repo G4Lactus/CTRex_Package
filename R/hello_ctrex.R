@@ -1,6 +1,6 @@
 # R/hello_ctrex
 #
-#' A greeting for the ctlars package user.
+#' A greeting for the ctrex package user.
 #' @export
 #
 hello_ctrex <- function() {
