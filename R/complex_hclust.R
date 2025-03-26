@@ -67,7 +67,9 @@ determine_optimal_minModuleSize <- function(hc_fit, minModuleSizes) {
   # Loop through minModuleSize values
   for (i in seq_along(minModuleSizes)) {
     minSize <- minModuleSizes[i]
-    clusters <- dynamicTreeCut::cutreeDynamicTree(hc_fit, deepSplit = FALSE, minModuleSize = minSize)
+    clusters <- dynamicTreeCut::cutreeDynamicTree(hc_fit,
+                                                  deepSplit = FALSE,
+                                                  minModuleSize = minSize)
 
     # Calculate metrics
     nClusters[i] <- length(unique(clusters))
