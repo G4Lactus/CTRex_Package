@@ -14,6 +14,8 @@ engineering, communications, physics, and all disciplines being
 presented with the problem of high-dimensional FDR control in the
 complex number domain.
 
+Note: A Python and C++ Implementation is coming soon.
+
 # Installation
 
 Before installing the `CT-Rex` package, you need to install the required
