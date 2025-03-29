@@ -2,27 +2,54 @@
 #' Run the CT-Rex selector
 #'
 #' @description
-#' The CT-Rex selector performs fast variable selection in high-dimensional settings while
-#' controlling the false discovery rate (FDR) at a user-defined target level.
+#' The CT-Rex selector performs fast variable selection in high-dimensional
+#' settings while controlling the false discovery rate (FDR) at a user-defined
+#' target level.
 #'
-#' @param X Real valued predictor matrix.
-#' @param y Response vector.
-#' @param tFDR Target FDR level (between 0 and 1, i.e., 0% and 100%).
+#' @param X Complex-valued numeric predictor matrix (n x p, n = observations,
+#' p = variables).
+#' @param y Complex-valued response vector (length n).
+#' @param tFDR Target FDR level between 0 and 1 (e.g., 0.1 = 10% FDR target).
+#' Default: 0.10.
 #' @param K Number of random experiments.
-#' @param max_num_dummies Integer factor determining the maximum number of dummies as a multiple of the number of original variables p
-#' (i.e., num_dummies = max_num_dummies * p).
-#' @param max_T_stop If TRUE the maximum number of dummies that can be included before stopping is set to ceiling(n / 2),
-#' where n is the number of data points/observations.
-#' @param method 'trex' for the T-Rex selector. 'trex+GVS' for CT-Rex Group-Variable Selector.
-#' @param gvs_type 'EN' for elastic network group selection. 'IEN' for informed-elastic network group selection.
-#' @param parallel_process Logical. If TRUE random experiments are executed in parallel.
-#' @param parallel_max_cores Maximum number of cores to be used for parallel processing
-#' (default: minimum{Number of random experiments K, number of physical cores}).
-#' @param seed Seed for random number generator (ignored if parallel_process = FALSE).
-#' @param eps Numerical zero.
-#' @param verbose Logical. If TRUE progress in computations is shown.
+#' Default: 20.
+#' @param max_num_dummies Integer factor determining maximum number of dummies
+#' as multiple of original variables (num_dummies = max_num_dummies * p).
+#' Default: 10.
+#' @param max_T_stop Logical indicating whether to set maximum dummy threshold
+#' at ceiling(n/2). When TRUE, overrides max_num_dummies. Default: TRUE.
+#' @param method Selection method: \itemize{
+#'   \item "ctrex": Base CT-Rex algorithm
+#'   \item "ctrex+GVS": CT-Rex with Group Variable Selection
+#' } Default: "ctrex".
+#' @param gvs_type Group variable selection type (method = "ctrex+GVS"):
+#' \itemize{
+#'   \item "cEN": Complex Elastic Net regularization
+#'   \item "cIEN": Complex Informed Elastic Net
+#' } Default: "cEN".
+#' @param dummy_type Dummy variable generation method: \itemize{
+#'   \item "Complex Gaussian": Complex normal distributed dummies
+#'   \item "Complex Circular Uniform": Uniform on complex unit circle
+#' } Default: "Complex Gaussian".
+#' @param hc_method Hierarchical clustering method (for grouping): \itemize{
+#'   \item "single": Single linkage
+#'   \item "complete": Complete linkage
+#'   \item "ward.D2": Ward's method
+#' } Default: "single".
+#' @param hc_tree_cut_type Dendrogram cutting method: \itemize{
+#'   \item "fixed": Cut at specified height (hc_tree_cut_height)
+#'   \item "dynamic": Dynamic tree cutting
+#' } Default: "fixed".
+#' @param hc_tree_cut_height Height for fixed tree cutting (0-1). Default: 0.5.
+#' @param hc_dyn_tree_minModuleSize Minimum cluster size for dynamic tree cutting.
+#' Default: 10.
+#' @param seed Random seed for reproducibility. Default: NULL (no seed).
+#' @param eps Numerical precision threshold. Default: .Machine$double.eps.
+#' @param verbose Logical for progress display. Default: TRUE.
 #'
-#' @return A list containing the estimated support vector and additional information, including the number of used dummies and the number of included dummies before stopping.
+#' @return A list containing the estimated support vector and additional
+#' information, including the number of used dummies and the number of included
+#' dummies before stopping.
 #'
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doParallel registerDoParallel
@@ -43,23 +70,18 @@ ctrex <- function(X,
                   gvs_type = c("cEN", "cIEN")[1],
                   dummy_type = c("Complex Gaussian", "Complex Circular Uniform")[1],
                   hc_method = c("single", "complete", "ward.D2")[1],
-                  tree_cut_type = c("fixed", "dynamic")[1],
-                  coherence_max = 0.5,
-                  minModuleSize = 10,
-                  parallel_process = FALSE,
-                  parallel_max_cores = min(K, max(1, parallel::detectCores(logical = FALSE))),
+                  hc_tree_cut_type = c("fixed", "dynamic")[1],
+                  hc_tree_cut_height = 0.5,
+                  hc_dyn_tree_minModuleSize = 10,
                   seed = NULL,
                   eps = .Machine$double.eps,
                   verbose = TRUE) {
 
-
-  # TODO: write and perform `data_fidelity_check` function
-
+  # TODO: write and perform input `data_fidelity_check` function
 
   # Scale X and center y
   X <- scale_x(X)
   y <- y - mean(y)
-
 
   # --------------------------------------------------
   # TODO: move to function `determine_voting_grid`
@@ -102,16 +124,14 @@ ctrex <- function(X,
         method = method,
         gvs_type = gvs_type,
         hc_method = hc_method,
-        tree_cut_type = tree_cut_type,
-        coherence_max = coherence_max,
-        minModuleSize = minModuleSize,
+        hc_tree_cut_type = hc_tree_cut_type,
+        hc_tree_cut_height = hc_tree_cut_height,
+        hc_dyn_tree_minModuleSize = hc_dyn_tree_minModuleSize,
         lambda_2_lars = NULL,
         early_stop = TRUE,
         ctlars_learner_lst = ctlars_learner_lst,
         verbose = FALSE,
         standardize = TRUE,
-        parallel_process = parallel_process,
-        parallel_max_cores = parallel_max_cores,
         seed = seed,
         eps = eps
       )
@@ -175,25 +195,21 @@ ctrex <- function(X,
         method = method,
         gvs_type = gvs_type,
         hc_method = hc_method,
-        tree_cut_type = tree_cut_type,
-        coherence_max = coherence_max,
-        minModuleSize = minModuleSize,
+        hc_tree_cut_type = hc_tree_cut_type,
+        hc_tree_cut_height = hc_tree_cut_height,
+        hc_dyn_tree_minModuleSize = hc_dyn_tree_minModuleSize,
         lambda_2_lars = NULL,
         early_stop = TRUE,
         ctlars_learner_lst = rand_exp$ctlars_learner_lst,
         verbose = FALSE,
         intercept = FALSE,
         standardize = TRUE,
-        parallel_process = parallel_process,
-        parallel_max_cores = parallel_max_cores,
         seed = seed,
         eps = eps
       )
     )
 
-
     Phi_mat <- rbind(Phi_mat, rand_exp$Phi)
-
 
     # Phi_prime
     Phi_prime <- Phi_prime_fun(
@@ -342,9 +358,8 @@ data_fidelity_check <- function() {
   #   parallel_max_cores <-
   #     min(K, max(1, parallel::detectCores(logical = FALSE)))
   # }
-
-
 }
+
 
 # # TODO: document, but no export
 # determine_voting_grid <- function() {
