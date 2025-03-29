@@ -27,8 +27,6 @@ ctrex_res <- CTrex::ctrex(data$X,
       max_num_dummies = 10,
       max_T_stop = TRUE,
       method = "ctrex",
-      parallel_process = FALSE,
-      parallel_max_cores = min(K, max(1, parallel::detectCores(logical = FALSE))),
       seed = NULL,
       eps = .Machine$double.eps,
       verbose = TRUE)
