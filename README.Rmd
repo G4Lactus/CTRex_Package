@@ -67,7 +67,7 @@ cat("Selected variables:\n", which(ctrex_obj$selected_var > 0))
 
 ```
 
-## Paper Citation
+# Paper Citation
 This repository contains code of the CT-Rex selector which is the foundation
 for the work developed in [^1]. If you are interested in more details and our
 scripts, please reach out to us.

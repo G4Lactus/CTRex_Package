@@ -61,6 +61,12 @@ ctrex_obj <- CTrex::ctrex(X = X, y = y, tFDR = 0.1)
 cat("Selected variables:\n", which(ctrex_obj$selected_var > 0))
 ```
 
+# Paper Citation
+
+This repository contains code of the CT-Rex selector which is the
+foundation for the work developed in [^1]. If you are interested in more
+details and our scripts, please reach out to us.
+
 # Links
 
 If you interested in FDR controlled variable selection in the real
@@ -82,3 +88,9 @@ Vignette:
 
 tlars package: [CRAN-tlars](https://CRAN.R-project.org/package=tlars)
 and [GitHub-tlars](https://github.com/jasinmachkour/tlars).
+
+[^1]: F. Scheidt, J. Machkour, and M. Muma, **FDR Control for
+    Complex-Valued Data with Application in Single Snapshot Multi-Source
+    Detection and DOA Estimation**. Presented at ICASSP 2025, Hyderabad,
+    India. DOI:
+    [10.1109/ICASSP49660.2025.10889705](https://doi.org/10.1109/ICASSP49660.2025.10889705).
