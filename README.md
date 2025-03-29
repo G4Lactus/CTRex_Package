@@ -25,9 +25,9 @@ version). Afterwards you can install the `CT-Rex` package
 [Github](https://github.com/G4Lactus/CTrex_Package).
 
 ``` r
-# install.packages("devtools")
-# devtools::install_github("https://github.com/G4Lactus/CTLARS_Package")
-# devtools::install_github("https://github.com/G4Lactus/CTrex_Package")
+install.packages("devtools")
+devtools::install_github("https://github.com/G4Lactus/CTLARS_Package")
+devtools::install_github("https://github.com/G4Lactus/CTrex_Package")
 ```
 
 # Quick Start
