@@ -95,9 +95,10 @@ ctrex_gvs_en_tc_static <- CTrex::ctrex(
                               method = "ctrex+GVS",
                               gvs_type = "cEN",
                               hc_method = "single",
-                              tree_cut_type = "fixed",
-                              coherence_max = 0.5
+                              hc_tree_cut_type = "fixed",
+                              hc_tree_cut_height = 0.5
                             )
+
 
 ctrex_gvs_en_tc_dyn <- CTrex::ctrex(
                           X = X,
@@ -106,21 +107,21 @@ ctrex_gvs_en_tc_dyn <- CTrex::ctrex(
                           method = "ctrex+GVS",
                           gvs_type = "cEN",
                           hc_method = "ward.D2",
-                          tree_cut_type = "dynamic",
-                          minModuleSize = 5
+                          hc_tree_cut_type = "dynamic",
+                          hc_dyn_tree_minModuleSize = 5
                         )
 
 
 ctrex_gvs_en_tc_dyn_mos <- CTrex::ctrex(
-  X = X,
-  y = y,
-  tFDR = 0.1,
-  method = "ctrex+GVS",
-  gvs_type = "cEN",
-  hc_method = "ward.D2",
-  tree_cut_type = "dynamic",
-  minModuleSize = NULL
-)
+                          X = X,
+                          y = y,
+                          tFDR = 0.1,
+                          method = "ctrex+GVS",
+                          gvs_type = "cEN",
+                          hc_method = "ward.D2",
+                          hc_tree_cut_type = "dynamic",
+                          hc_dyn_tree_minModuleSize = NULL
+                        )
 
 
 # cTRex+gvs selection: cIEN
@@ -132,9 +133,9 @@ ctrex_gvs_ien_tc_static <- CTrex::ctrex(
                        method = "ctrex+GVS",
                        gvs_type = "cIEN",
                        hc_method = "single",
-                       tree_cut_type = "fixed",
-                       coherence_max = 0.5
-                       )
+                       hc_tree_cut_type = "fixed",
+                       hc_tree_cut_height = 0.5
+                      )
 
 
 ctrex_gvs_ien_tc_dyn <- CTrex::ctrex(
@@ -144,20 +145,21 @@ ctrex_gvs_ien_tc_dyn <- CTrex::ctrex(
                       method = "ctrex+GVS",
                       gvs_type = "cIEN",
                       hc_method = "ward.D2",
-                      tree_cut_type = "dynamic",
-                      minModuleSize = 5
+                      hc_tree_cut_type = "dynamic",
+                      hc_dyn_tree_minModuleSize = 5
                       )
 
 ctrex_gvs_ien_tc_dyn_mos <- CTrex::ctrex(
-  X = X,
-  y = y,
-  tFDR = 0.1,
-  method = "ctrex+GVS",
-  gvs_type = "cIEN",
-  hc_method = "ward.D2",
-  tree_cut_type = "dynamic",
-  minModuleSize = NULL
-)
+                        X = X,
+                        y = y,
+                        tFDR = 0.1,
+                        method = "ctrex+GVS",
+                        gvs_type = "cIEN",
+                        hc_method = "ward.D2",
+                        hc_tree_cut_type = "dynamic",
+                        hc_dyn_tree_minModuleSize = NULL
+                      )
+
 
 
 # Performance Evaluation
@@ -176,6 +178,3 @@ tlars::FDP(which(ctrex_gvs_ien_tc_static$selected_var > 0), beta_support)
 tlars::FDP(which(ctrex_gvs_ien_tc_dyn$selected_var > 0), beta_support)
 tlars::FDP(which(ctrex_gvs_en_tc_dyn_mos$selected_var > 0), beta_support)
 tlars::FDP(which(ctrex_gvs_ien_tc_dyn_mos$selected_var > 0), beta_support)
-
-
-
