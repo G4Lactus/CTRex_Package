@@ -5,29 +5,53 @@
 #' Run K random experiments and compute the matrix of relative occurrences for all variables
 #' and all numbers of included variables before stopping.
 #'
-#' @param X Real valued predictor matrix.
-#' @param y Response vector.
+#' @param X Complex-valued predictor matrix (n x p)
+#' @param y Complex-valued response vector (length n)
 #' @param K Number of random experiments.
-#' @param T_stop Number of included dummies after which the random experiments (i.e., forward selection processes) are stopped.
-#' @param num_dummies Number of dummies that are appended to the predictor matrix.
-#' @param method 'ctrex' for the T-Rex selector. 'ctrex+GVS' for CT-Rex Group-Variable Selector.
-#' @param gvs_type 'cEN' for elastic network group selection. 'cIEN' for informed-elastic network group selection.
-#' @param early_stop Logical. If TRUE, then the forward selection process is stopped after T_stop dummies have been included.
-#' Otherwise the entire solution path is computed.
-# @param lars_state_list If parallel_process = TRUE: List of state variables of the previous T-LARS steps of the K random experiments
-# (necessary for warm-starts, i.e., restarting the forward selection process exactly where it was previously terminated).
-# If parallel_process = FALSE: List of objects of the class tlars_cpp associated with the K random experiments
-# (necessary for warm-starts, i.e., restarting the forward selection process exactly where it was previously terminated).
+#' Default: 20.
+#' @param T_stop Number of included dummies after which the random experiments
+#' (i.e., forward selection processes) are stopped.
+#' @param num_dummies Number of dummies that are appended to the predictor
+#'  matrix per experiment.
+#' Default: p  = ncol(X).
+#' @param dummy_type Dummy generation method: \itemize{
+#'   \item "Complex Gaussian": CN(0,1) distributed
+#'   \item "Complex Circular Uniform": Uniform on complex unit circle
+#' } Default: "Complex Gaussian".
+#' @param method Selection approach: \itemize{
+#'   \item "ctrex": Base CT-Rex algorithm
+#'   \item "ctrex+GVS": T-Rex with Group Variable Selection
+#' } Default: "ctrex".
+#' @param gvs_type Group selection type (method = "ctrex+GVS"): \itemize{
+#'   \item "cEN": Complex Elastic Net regularization
+#'   \item "cIEN": Complex Informed Elastic Net
+#' } Default: "cEN".
+#' @param hc_method Hierarchical clustering method (for grouping): \itemize{
+#'   \item "single": Single linkage
+#'   \item "complete": Complete linkage
+#'   \item "ward.D2": Ward's method
+#' } Default: "single".
+#' @param hc_tree_cut_type Dendrogram cutting method: \itemize{
+#'   \item "fixed": Cut at specified height (hc_tree_cut_height)
+#'   \item "dynamic": Dynamic tree cutting
+#' } Default: "fixed".
+#' @param hc_tree_cut_height Height for fixed tree cutting (0-1). Default: 0.5.
+#' @param hc_dyn_tree_minModuleSize Minimum cluster size for dynamic tree cutting.
+#' Default: 10.
+#' @param lambda_2_lars Regularization parameter for elastic net.
+#' Is internally determined by cross-validation of a ridge regression.
+#' @param early_stop Logical. If TRUE, then the forward selection process is
+#'  stopped after T_stop dummies have been included. Otherwise the entire
+#'  solution path is computed.
+#' Default: TRUE.
 #' @param ctlars_learner_lst A list of ctlars learners.
-#' @param verbose Logical. If TRUE progress in computations is shown.
-# @param intercept Logical. If TRUE an intercept is included.
-#' @param intercept Default FALSE.
-#' @param standardize Logical. If TRUE the predictors are standardized and the response is centered.
-#' @param parallel_process Logical. If TRUE random experiments are executed in parallel.
-#' @param parallel_max_cores Maximum number of cores to be used for parallel processing
-#' (default: minimum{Number of random experiments K, number of physical cores}).
-#' @param seed Seed for random number generator (ignored if parallel_process = FALSE).
-#' @param eps Numerical zero.
+#' Default: NULL.
+#' @param verbose Logical for progress display. Default: TRUE.
+#' @param intercept Logical for fit with intercept term. Default: FALSE.
+#' @param standardize Logical for predictor standardization. Default: TRUE.
+#' @param seed Random seed for controlled random experiements.
+#' Default: NULL.
+#' @param eps Numerical precision threshold. Default: .Machine$double.eps.
 #'
 #' @return List containing the results of the K random experiments.
 #'
@@ -50,18 +74,16 @@ complex_random_experiments <- function(X,
                                dummy_type = c("Complex Gaussian", "Complex Circular Uniform")[1],
                                method = c("ctrex", "ctrex+GVS")[1],
                                gvs_type = c("cEN", "cIEN")[1],
-                               hc_method = "ward.D2",
-                               tree_cut_type = c("fixed", "dynamic")[1],
-                               coherence_max = 0.5,
-                               minModuleSize = 10,
+                               hc_method = c("single", "complete", "ward.D2")[1],
+                               hc_tree_cut_type = c("fixed", "dynamic")[1],
+                               hc_tree_cut_height = 0.5,
+                               hc_dyn_tree_minModuleSize = 10,
                                lambda_2_lars = NULL,
                                early_stop = TRUE,
                                ctlars_learner_lst = NULL,
                                verbose = TRUE,
                                intercept = FALSE,
                                standardize = TRUE,
-                               parallel_process = FALSE,
-                               parallel_max_cores = min(K, max(1, parallel::detectCores(logical = FALSE))),
                                seed = NULL,
                                eps = .Machine$double.eps) {
 
@@ -125,9 +147,9 @@ complex_random_experiments <- function(X,
               num_dummies = num_dummies,
               gvs_type = gvs_type,
               hc_method = hc_method,
-              tree_cut_type = tree_cut_type,
-              coherence_max = coherence_max,
-              minModuleSize = minModuleSize)$X_dummy
+              hc_tree_cut_type = hc_tree_cut_type,
+              hc_tree_cut_height = hc_tree_cut_height,
+              hc_dyn_tree_minModuleSize = hc_dyn_tree_minModuleSize)$X_dummy
 
             p_dummy <- ncol(X_dummy)
 
@@ -145,9 +167,9 @@ complex_random_experiments <- function(X,
                 num_dummies = num_dummies,
                 gvs_type = gvs_type,
                 hc_method = hc_method,
-                tree_cut_type = tree_cut_type,
-                coherence_max = coherence_max,
-                minModuleSize = minModuleSize
+                hc_tree_cut_type = hc_tree_cut_type,
+                hc_tree_cut_height = hc_tree_cut_height,
+                hc_dyn_tree_minModuleSize = hc_dyn_tree_minModuleSize
               )
 
             X_dummy <- cmplx_gvs_dummies$X_dummy
