@@ -1,4 +1,41 @@
-# Cross-validation to optimize lambda
+#' @title
+#' Complex-Valued Ridge Regularization Tuning via Cross-Validation
+#'
+#' @description
+#' Internal function performing k-fold cross-validation to select optimal
+#' L2 regularization parameter (λ) for complex ridge regression. Implements
+#' both minimum MSE and 1-standard-error rule for λ selection.
+#'
+#' @param X Complex-valued predictor matrix (n x p).
+#' @param y Complex-valued response vector (length n).
+#' @param epsilon Ratio of smallest to largest λ in grid (0 < ε < 1).
+#' @param L Number of λ values to evaluate in regularization path.
+#' @param nfolds Number of cross-validation folds. Default: 10.
+#'
+#' @return List containing: \itemize{
+#'   \item best_lambda: λ achieving minimum cross-validated MSE
+#'   \item lambda_1se: Largest λ within 1 standard error of minimum MSE
+#'   \item cv_errors: Average MSE for each λ (length L)
+#'   \item lambdas: Tested λ sequence (length L)
+#' }
+#'
+#' @keywords internal
+#'
+#' @examples
+#' \donttest{
+#' # Generate complex data
+#' X <- matrix(complex(real=rnorm(100), imaginary=rnorm(100)), ncol=10)
+#' y <- complex(real=rnorm(10), imaginary=rnorm(10))
+#'
+#' # Find optimal lambda with 20 values and 5 folds
+#' cv_result <- lambda_cv(X, y, epsilon=0.01, L=20, nfolds=5)
+#'
+#' # Plot CV curve
+#' plot(log(cv_result$lambdas), cv_result$cv_errors, type="b")
+#' abline(v=log(cv_result$best_lambda), col="red")
+#'
+#' }
+#
 lambda_cv <- function(X, y, epsilon, L, nfolds = 10) {
 
   n <- nrow(X)
