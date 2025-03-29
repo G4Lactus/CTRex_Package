@@ -3,15 +3,17 @@ CT-Rex Selector
 
 ## CT-Rex Selector
 
-The CT-Rex selector performs complex-valued terminated-random
-experiments (CT-Rex) using the CT-LARS algorithm and fuses the selected
-sets of all random experiments to obtain a final set of selected
-variables. It provably controls the false discovery rate (FDR) at a
-user-defined target level while maximizing the number of selected
-variables. Thereby it achieves a high true positive rate (TPR) (i.e.,
-power). The CT-Rex selector can be applied in various fields, such as in
-engineering, communications, physics, and all disciplines being
-presented with the problem of high-dimensional FDR control in the
+The CT-Rex Selector performs complex-valued terminated-random
+experiments (CT-Rex) using the CT-LARS algorithm. It combines the
+selected sets from all random experiments to produce a final set of
+selected variables. The method provably controls the false discovery
+rate (FDR) at a user-defined target level while maximizing the number of
+selected variables, thereby achieving a high true positive rate (TPR),
+also referred to as power.
+
+The CT-Rex Selector is applicable across various fields, including
+engineering, magnet resonance imaging, communications, physics, and
+other disciplines that require high-dimensional FDR control in the
 complex number domain.
 
 Note: A Python and C++ Implementation is coming soon.
