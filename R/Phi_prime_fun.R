@@ -1,5 +1,7 @@
+#' @title
 #' Computes the Deflated Relative Occurrences
 #'
+#' @description
 #' Computes the matrix of deflated relative occurrences for all variables (i.e., j = 1,..., p) and for T = 1, ..., T_stop.
 #'
 #' @param p Number of candidate variables.
